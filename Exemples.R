@@ -53,16 +53,45 @@ rma(yi = yi, vi = vi, data = Data, test= "knha", method="REML")
 #Possibilité d'utiliser plusieurs méthodes d'estimation différentes. Voir ?rma
 #Le choix de la méthode d'estimation peut influencer les résultats (Vietchbauer et al 2015)
 #Voir ?rma pour articles de référence; Borenstein et al 2009 parle de DL ou REML. Je vous conseille de vous renseigner!
-#Ajustement au test statistique choisi selon Vietchbauer et al (2015)
+#Ajustement au test statistique choisi selon Vietchbauer et al (2015). Cet ajustement rend le test plus conservateur
+#La combinaison de "knha" et de "REML" peut mener à des problèmes de convergence (Vietchbauer 2010)
 
 ####Analyses: modèles avec modérateurs####
 
+##Modérateur continu
 rma(yi = yi, vi = vi, mods = Plot_size, data = Data, method = "REML", test = "knha")
-rma(yi ~ Plot_size, vi, data = Data, method = "REML", test = "knha")
+rma(yi ~ Plot_size, vi, data = Data, method = "REML", test = "knha")#Présenté sous format de formule
 
+##Modérateur catégorique
 rma(yi = yi, vi = vi, mods = ~Type_exp, data = Data, method = "REML", test = "knha")
 
+##Combiner les modérateurs
 mod <- rma(yi ~ Type_exp + Plot_size + Type_exp*Plot_size, vi, data = Data, method = "REML", test = "knha")
 
-summary(mod) #Donne notamment des valeurs d'AIC, BIC et AICc
 anova(mod) #Test statistique sur les modérateurs
+summary(mod) #Donne notamment des valeurs d'AIC, BIC et AICc
+confint(mod) #Intervalles de confiance pour les estimateurs de l'hétérogénéité
+
+####Outils de diagnostic####
+
+##Outliers
+inf <- influence(mod)
+plot(inf, plotdfb = TRUE)
+
+##Biais de publication
+
+#Funnel plot
+par(mfrow=c(1,1))
+funnel(mod, yaxis="vi")
+#Plusieurs possibilités pour l'axe des y. Voir ?funnel
+
+#Funnel plot avec trim-and-fill
+
+trimfill(mod)
+taf <- trimfill(rma(yi = yi, vi = vi, data = Data, test= "knha", method="REML"))
+funnel(taf)
+#Aucune étude manquante dans ce jeu de données
+#Pourrait être subdivisé en groupes de modérateurs
+
+
+####Figures####
