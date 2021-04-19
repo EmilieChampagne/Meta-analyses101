@@ -1,5 +1,5 @@
 ####Atelier Méta-analyse 101####
-#Atelier donné virtuellement, 5 mai 2020, de chez moi, en collaboratoire avec le CEF
+#Atelier donné virtuellement, 26 avril 2021, de chez moi, en collaboration avec le CEF et l'ISFORT
 #Par Emilie Champagne
 #Note: Je ne suis pas une experte en statistique. Le code présenté ici permet d'explorer les fonctions de Metafor
 #Consultez des livres, des articles et des statisticiens lorsque vous réalisez une méta-analyse!
@@ -38,7 +38,7 @@ Data <- read.table( file = "Data.txt", header = TRUE,
 #Calcul de la taille d'effet avec la fonction escalc
 Data <- escalc( measure = "SMD", m1i = Mean_C, m2i = Mean_E, sd1i = SD_C, sd2i = SD_E,
        n1i = N_C, n2i = N_E, data = Data)
-#SMD est la formule de Hedges. Autres options possibles, voir avec ?escalc
+#SMD est la formule de Hedges avec variance hétérogènes. Autres options possibles, voir avec ?escalc
 
 summary( Data$yi )
 summary( Data$vi )
