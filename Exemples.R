@@ -30,8 +30,7 @@ Data <- read.table( file = "Data.txt", header = TRUE,
 #Mean_C, N_C, SD_C: Moyenne, n et SD du contrôle (Dommage par des herbivore de la plante focale sans plante compagne)
 #Mean_E, N_E, SD_E: Moyenne, n et SD du traitement (Dommage par des herbivore de la plante focale avec plante compagne)
 
-##Jeux de données disponibles pour tests: dat.bcg, dat.hine1989, dat.raudenbush1985...
-
+##Jeux de données disponibles pour tests (inclut dans metafor): dat.bcg, dat.hine1989, dat.raudenbush1985...
 
 ####Calcul de taille d'effet####
 
@@ -77,11 +76,21 @@ anova( mod ) #Test statistique sur les modérateurs
 summary( mod ) #Donne notamment des valeurs d'AIC, BIC et AICc
 confint( mod ) #Intervalles de confiance pour les estimateurs de l'hétérogénéité
 
+##Attention!
+#Vous avez ici plusieurs exemples de modèles, mais la taille d'échantillon est très petit.
+#Pouvons-nous réalistement tester autant de modérateurs? Probablement pas.
+#Pouvons-nous faire plusieurs modèles sur un seul jeu de données? Pas vraiment.
+#Les concepts statistiques de 'base' s'appliquent également à la méta-analyse.
+
 ####Outils de diagnostic####
 
 ##Outliers
+
 inf <- influence( mod )
 plot( inf, plotdfb = TRUE )
+
+#Consultez Viechtbauer, W., Cheung, M.W.L., 2010. Outlier and influence diagnostics for meta‐analysis.
+#Research Synthesis Methods 1, 112-125. 
 
 ####Biais de publication####
 
@@ -93,10 +102,45 @@ funnel( mod, yaxis="vi" )
 
 #Funnel plot avec trim-and-fill
 
-trimfill( mod )
-taf <- trimfill( rma(yi = yi, vi = vi, data = Data, test= "knha", method="REML") )
+mod <- rma( yi = yi, vi = vi, data = Data, test= "knha", method = "REML") 
+trimfill( mod ) #Cette function estime la présence de données 'manquantes'. Voir ?trimfill
+taf <- trimfill( rma(yi = yi, vi = vi, data = Data, test= "knha", method="REML") ) 
 funnel( taf )
   #Aucune étude manquante dans ce jeu de données
   #Pourrait être subdivisé en groupes de modérateurs
 
+####Package metagear####
+library(EBImage)
+library(metagear)
+library(tidyverse) #simplement pour utiliser les pipes (%>%)
 
+##Jeu de données : liste de 11 articles. 
+#Il est possible d'exporter un fichier similaire d'un logiciel de référencement bibliographique et
+#de l'ajuster pour correspondre à cet exemple.
+
+data(example_references_metagear) 
+ex <- example_references_metagear
+
+
+##Division du travail entre plusieurs observateurs)
+
+team <- c("Emilie", "JP") #Équipe qui va évaluer les références
+
+ref_unscreened <- effort_distribute(ex, reviewers = team, effort = c(80, 20), #Ici on divise l'effort "inégalement"
+                                    initialize = TRUE, save_split = TRUE) 
+#La fonction effort_distribute permet de diviser les références à évaluer entre plusieurs observateurs
+#aléatoirement. 
+
+list.files(pattern = "effort")#Deux fichiers ont été créé
+
+##Phase de "screening" des références : évaluation par leur titre et résumé
+
+abstract_screener("effort_Emilie.csv", aReviewer = "Emilie") 
+#Vous devriez voir apparaitre une fenêtre qui permet d'évaluer chaque référence.
+
+##Fonctions additionnelles Metagear
+
+#Une fois l'évaluation terminée, les fichiers .csv peuvent être combinés avec `effort_merge()`, 
+#et comparés avec `effort_summary()`
+
+#Metagear peut tenter de downloader les PDF avec le DOI, avec les fonctions `PDF_download()` et `PDFs_collect()`
